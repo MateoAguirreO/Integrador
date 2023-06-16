@@ -72,11 +72,13 @@ def listar_archivos():
 def addsoli():
     body = request.get_json()
     fecha= body['fecha']
-    dependencias=body['dependencias']
+    dependencias=body['dependencia']
     gastos= body['gastos']
+    consecutivo = body['consecutivo']
     doc = {"fecha": fecha,
-            "dependencias": dependencias,
+            "dependencia": dependencias,
             "gastos": gastos,
+            "consecutivo": consecutivo
            }
     solicitud.insert_one(doc)
     return "Solicitud enviada exitosamente."
