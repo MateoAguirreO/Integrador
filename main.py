@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pyrebase
 from pymongo import MongoClient
 from flask_cors import CORS
@@ -22,6 +23,7 @@ collection = db["documentos"]
 saldosCollection = db["saldos"]
 reservasCollection = db["reservas"]
 cuentasPresupuesto = db["cuentasPresupuesto"]
+solicitud=db["solicitud"]
 
 
 app = Flask(__name__)
@@ -94,6 +96,35 @@ def listar_cuentas_presupuesto():
         cuenta = convertir_a_cadena(cuenta)
         lista_cuentas.append(cuenta)
     return jsonify(lista_cuentas)
+@app.route('/list', methods=['GET'])
+def listar_archivos():
+    # Obtener todos los registros de MongoDB
+    docs = collection.find({})
+    # Crear lista de archivos
+    archivos = []
+    for doc in docs:
+        # Convertir el ObjectId a cadena
+        doc['_id'] = str(doc['_id'])
+        archivos.append(doc)
+    return jsonify(archivos)
+@app.route('/addsoli', methods=['POST'])
+def addsoli():
+    body = request.get_json()
+    fecha= body['fecha']
+    dependencias=body['dependencia']
+    gastos= body['gastos']
+    consecutivo = body['consecutivo']
+    doc = {"fecha": fecha,
+            "dependencia": dependencias,
+            "gastos": gastos,
+            "consecutivo": consecutivo
+           }
+    solicitud.insert_one(doc)
+    return "Solicitud enviada exitosamente."
+    
+
+    
+
 
 if __name__ == '__main__':
     app.run()
