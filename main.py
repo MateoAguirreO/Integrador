@@ -21,6 +21,7 @@ mongo_client = MongoClient(mongo_uri)
 db = mongo_client["integrador"]
 collection = db["documentos"]
 solicitud=db["solicitud"]
+solicitudR=db["solicitudR"]
 
 
 app = Flask(__name__)
@@ -81,6 +82,19 @@ def addsoli():
             "consecutivo": consecutivo
            }
     solicitud.insert_one(doc)
+    return "Solicitud enviada exitosamente."
+
+@app.route('/addsoliR', methods=['POST'])
+def addsoliR():
+    body = request.get_json()
+    fecha= body['fecha']
+    reintegros = body['reintegros']   
+    consecutivo = body['consecutivo']
+    doc = {"fecha": fecha,
+            "reintegros": reintegros,
+            "consecutivo": consecutivo
+           }
+    solicitudR.insert_one(doc)
     return "Solicitud enviada exitosamente."
     
 
