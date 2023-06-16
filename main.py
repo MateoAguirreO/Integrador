@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pyrebase
 from pymongo import MongoClient
 
@@ -19,9 +20,11 @@ mongo_uri = "mongodb+srv://ricardo:admin123@clusterinteligentes.5onsapb.mongodb.
 mongo_client = MongoClient(mongo_uri)
 db = mongo_client["integrador"]
 collection = db["documentos"]
+solicitud=db["solicitud"]
 
 
 app = Flask(__name__)
+CORS(app)
 firebase = pyrebase.initialize_app(firebase_config)
 storage = firebase.storage()
 auth = firebase.auth()
@@ -53,6 +56,34 @@ def eliminar_archivo():
     # Eliminar registro en MongoDB
     collection.delete_one({"nombre_archivo": nombre_archivo})
     return jsonify({"message": f"Archivo {nombre_archivo} eliminado exitosamente."})
+
+@app.route('/list', methods=['GET'])
+def listar_archivos():
+    # Obtener todos los registros de MongoDB
+    docs = collection.find({})
+    # Crear lista de archivos
+    archivos = []
+    for doc in docs:
+        # Convertir el ObjectId a cadena
+        doc['_id'] = str(doc['_id'])
+        archivos.append(doc)
+    return jsonify(archivos)
+@app.route('/addsoli', methods=['POST'])
+def addsoli():
+    body = request.get_json()
+    fecha= body['fecha']
+    dependencias=body['dependencias']
+    gastos= body['gastos']
+    doc = {"fecha": fecha,
+            "dependencias": dependencias,
+            "gastos": gastos,
+           }
+    solicitud.insert_one(doc)
+    return "Solicitud enviada exitosamente."
+    
+
+    
+
 
 if __name__ == '__main__':
     app.run()
