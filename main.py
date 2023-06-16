@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import pyrebase
 from pymongo import MongoClient
-
+from flask_cors import CORS
 # Configuración de Firebase
 firebase_config = {
   "apiKey": "AIzaSyBCTlDmnpFhoCGmU54auEcrkQ9IubGuZa0",
@@ -19,9 +19,13 @@ mongo_uri = "mongodb+srv://ricardo:admin123@clusterinteligentes.5onsapb.mongodb.
 mongo_client = MongoClient(mongo_uri)
 db = mongo_client["integrador"]
 collection = db["documentos"]
+saldosCollection = db["saldos"]
+reservasCollection = db["reservas"]
+cuentasPresupuesto = db["cuentasPresupuesto"]
 
 
 app = Flask(__name__)
+CORS(app)
 firebase = pyrebase.initialize_app(firebase_config)
 storage = firebase.storage()
 auth = firebase.auth()
@@ -53,6 +57,43 @@ def eliminar_archivo():
     # Eliminar registro en MongoDB
     collection.delete_one({"nombre_archivo": nombre_archivo})
     return jsonify({"message": f"Archivo {nombre_archivo} eliminado exitosamente."})
+
+def convertir_a_cadena(documento):
+    documento['_id'] = str(documento['_id'])
+    return documento
+
+@app.route('/listarSaldos', methods=['GET'])
+def listar_saldos():
+    # Obtener todos los registros de MongoDB
+    saldos = saldosCollection.find()
+    # Crear una lista con los registros
+    lista_saldos = []
+    for saldo in saldos:
+        saldo = convertir_a_cadena(saldo)
+        lista_saldos.append(saldo)
+    return jsonify(lista_saldos)
+
+@app.route('/listarReservas', methods=['GET'])
+def listar_reservas():
+    # Obtener todos los registros de MongoDB
+    reservas = reservasCollection.find()
+    # Crear una lista con los registros
+    lista_reservas = []
+    for reserva in reservas:
+        reserva = convertir_a_cadena(reserva)
+        lista_reservas.append(reserva)
+    return jsonify(lista_reservas)
+
+@app.route('/listarCuentasPresupuesto', methods=['GET'])
+def listar_cuentas_presupuesto():
+    # Obtener todos los registros de MongoDB
+    cuentas = cuentasPresupuesto.find()
+    # Crear una lista con los registros
+    lista_cuentas = []
+    for cuenta in cuentas:
+        cuenta = convertir_a_cadena(cuenta)
+        lista_cuentas.append(cuenta)
+    return jsonify(lista_cuentas)
 
 if __name__ == '__main__':
     app.run()
